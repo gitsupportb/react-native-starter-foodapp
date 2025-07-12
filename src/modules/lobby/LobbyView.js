@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { View, StyleSheet, FlatList, Alert } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { onSnapshot, doc, updateDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text } from '../../components/StyledText';
@@ -11,6 +11,7 @@ import { colors } from '../../styles';
 
 export default function LobbyView() {
   const route = useRoute();
+  const navigation = useNavigation();
   const { roomId } = route.params;
 
   const user = auth.currentUser;
@@ -95,6 +96,9 @@ export default function LobbyView() {
     );
   }
 
+  const isHost = room?.host === uid;
+  const allReady = room && Object.values(room.members).every((m) => m.ready);
+
   return (
     <View style={styles.container}>
       <Text size={24} bold style={{ marginBottom: 15 }}>
@@ -116,6 +120,13 @@ export default function LobbyView() {
         onPress={toggleReady}
         style={{ marginTop: 20, alignSelf: 'stretch' }}
       />
+      {isHost && allReady && (
+        <Button
+          caption="Start Swiping"
+          onPress={() => navigation.navigate('Swipe', { roomId })}
+          style={{ marginTop: 10, alignSelf: 'stretch' }}
+        />
+      )}
     </View>
   );
 }
