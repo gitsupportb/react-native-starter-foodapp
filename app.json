@@ -1,4 +1,75 @@
 {
-  "name": "ReactNativeStarter",
-  "displayName": "ReactNativeStarter"
+  "expo": {
+    "name": "Food Buddy V1",
+    "slug": "food-buddy-v1",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.foodbuddy.v1",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Food Buddy needs access to your location to find nearby restaurants and provide accurate distance information.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Food Buddy needs access to your location to find nearby restaurants and provide accurate distance information.",
+        "NSCameraUsageDescription": "Food Buddy needs access to your camera to upload profile photos.",
+        "NSPhotoLibraryUsageDescription": "Food Buddy needs access to your photo library to upload profile photos.",
+        "NSMicrophoneUsageDescription": "Food Buddy needs access to your microphone for voice messages in chat.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLName": "foodbuddy",
+            "CFBundleURLSchemes": ["foodbuddy"]
+          }
+        ]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      },
+      "package": "com.foodbuddy.v1",
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "RECORD_AUDIO",
+        "INTERNET",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-location",
+      "expo-notifications",
+      "expo-image-picker",
+      "expo-camera",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "your-project-id-here"
+      }
+    },
+    "owner": "foodbuddy"
+  }
 }
