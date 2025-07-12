@@ -3,7 +3,8 @@ import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import Swiper from 'react-native-deck-swiper';
 import * as Haptics from 'expo-haptics';
-import { collection, query, onSnapshot, addDoc, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, onSnapshot, setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import * as Location from 'expo-location';
 import RestaurantCard from '../../components/RestaurantCard';
 import Button from '../../components/Button';
 import { auth, db } from '../../services/firebase';
@@ -20,6 +21,7 @@ export default function SwipeView() {
   const uid = user?.uid;
 
   const [venues, setVenues] = useState([]);
+  const [location, setLocation] = useState(null);
   const swiperRef = useRef(null);
 
   /* ---------- Subscribe to venue list ---------- */
@@ -31,6 +33,39 @@ export default function SwipeView() {
     });
     return () => unsub();
   }, [roomId]);
+
+  /* ---------- Get user location once ---------- */
+  useEffect(() => {
+    (async () => {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        console.warn('Location permission not granted');
+        return;
+      }
+      const loc = await Location.getCurrentPositionAsync({});
+      setLocation(loc);
+    })();
+  }, []);
+
+  /* ---------- Add distance to venues ---------- */
+  useEffect(() => {
+    if (!location || venues.length === 0) return;
+    const { latitude: lat1, longitude: lon1 } = location.coords;
+    const toRad = (v) => (v * Math.PI) / 180;
+    const compute = (lat2, lon2) => {
+      const R = 6371; // km
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return (R * c).toFixed(1);
+    };
+    setVenues((prev) =>
+      prev.map((v) => ({ ...v, distance: v.lat && v.lng ? compute(v.lat, v.lng) : '?' }))
+    );
+  }, [location]);
 
   /* ---------- Handle like ---------- */
   const handleLike = useCallback(
