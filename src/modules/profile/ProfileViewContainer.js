@@ -2,6 +2,6 @@
 import { compose } from 'recompose';
 import { connect } from 'react-redux';
 
-import ProfileView from './ProfileView';
+import ProfileEditView from './ProfileEditView';
 
-export default compose(connect())(ProfileView);
+export default compose(connect())(ProfileEditView);
