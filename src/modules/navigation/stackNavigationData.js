@@ -3,6 +3,7 @@ import { TouchableOpacity, Image } from 'react-native';
 
 import TabNavigator from './MainTabNavigator';
 import ProfileScreen from '../profile/ProfileViewContainer';
+import LobbyScreen from '../lobby/LobbyViewContainer';
 import GalleryScreen from '../gallery/GalleryViewContainer';
 import ArticleScreen from '../article/ArticleViewContainer';
 import ChatScreen from '../chat/ChatViewContainer';
@@ -100,6 +101,17 @@ const StackNavigationData = [
   {
     name: 'Profile',
     component: ProfileScreen,
+    headerLeft: headerLeftComponent,
+    headerBackground: { source: headerBackground },
+    headerTitleStyle: {
+      fontFamily: fonts.primaryRegular,
+      color: colors.white,
+      fontSize: 18,
+    },
+  },
+  {
+    name: 'Lobby',
+    component: LobbyScreen,
     headerLeft: headerLeftComponent,
     headerBackground: { source: headerBackground },
     headerTitleStyle: {

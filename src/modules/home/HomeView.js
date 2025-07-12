@@ -1,78 +1,83 @@
-import React from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  ImageBackground,
-} from 'react-native';
-
-import { fonts, colors } from '../../styles';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import Button from '../../components/Button';
 import { Text } from '../../components/StyledText';
+import { colors } from '../../styles';
+import { db, auth } from '../../services/firebase';
 
-export default function HomeScreen({ isExtended, setIsExtended }) {
-  // const rnsUrl = 'https://reactnativestarter.com';
-  // const handleClick = () => {
-  //   Linking.canOpenURL(rnsUrl).then(supported => {
-  //     if (supported) {
-  //       Linking.openURL(rnsUrl);
-  //     } else {
-  //       console.log(`Don't know how to open URI: ${rnsUrl}`);
-  //     }
-  //   });
-  // };
+export default function HomeScreen() {
+  const navigation = useNavigation();
+  const [lastRoomId, setLastRoomId] = useState(null);
+
+  /* ---------- Load last room ---------- */
+  useEffect(() => {
+    const fetchLast = async () => {
+      const id = await AsyncStorage.getItem('lastRoomId');
+      if (id) setLastRoomId(id);
+    };
+    fetchLast();
+  }, []);
+
+  /* ---------- Create new room ---------- */
+  const handleStartMatch = async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) {
+      Alert.alert('Not signed in', 'Please log in first');
+      return;
+    }
+
+    // generate 6 digit pin
+    const pin = Math.floor(100000 + Math.random() * 900000).toString();
+
+    try {
+      await setDoc(doc(collection(db, 'rooms'), pin), {
+        host: uid,
+        pin,
+        createdAt: serverTimestamp(),
+        members: {
+          [uid]: {
+            ready: false,
+            displayName: auth.currentUser.displayName || auth.currentUser.email,
+            photoURL: auth.currentUser.photoURL || null,
+          },
+        },
+      });
+      await AsyncStorage.setItem('lastRoomId', pin);
+      navigation.navigate('Lobby', { roomId: pin });
+    } catch (e) {
+      console.error('Error creating room', e);
+      Alert.alert('Error', 'Could not create room');
+    }
+  };
+
+  const handleContinue = () => {
+    if (lastRoomId) {
+      navigation.navigate('Lobby', { roomId: lastRoomId });
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <ImageBackground
-        source={require('../../../assets/images/background.png')}
-        style={styles.bgImage}
-        resizeMode="cover"
-      >
-        <View style={styles.section}>
-          <Text size={20} white>
-            Home
-          </Text>
-        </View>
-        <View style={styles.section}>
-          <Text color={colors.introText} size={15}>
-            The smartest Way to build your mobile app
-          </Text>
-          <Text size={30} bold white style={styles.title}>
-            React Native Starter
-          </Text>
-        </View>
-        <View style={[styles.section, styles.sectionLarge]}>
-          <Text
-            color={colors.introText}
-            hCenter
-            size={15}
-            style={styles.description}
-          >
-            {' '}
-            A powerful starter project that bootstraps development of your
-            mobile application and saves you $20 000*
-          </Text>
-          <View style={styles.priceContainer}>
-            <View style={{ flexDirection: 'row' }}>
-              <Text white bold size={50} style={styles.price}>
-                {isExtended ? '$499' : '$99'}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.priceLink}
-              onPress={() =>
-                isExtended ? setIsExtended(false) : setIsExtended(true)
-              }
-            >
-              <Text white size={14}>
-                {isExtended
-                  ? 'Multiple Applications License'
-                  : 'Single Application License'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ImageBackground>
+      <Text size={28} bold style={{ marginBottom: 40 }}>
+        Food Buddy
+      </Text>
+
+      <Button
+        caption="Start Match"
+        onPress={handleStartMatch}
+        style={{ marginBottom: 20, width: '70%' }}
+      />
+
+      <Button
+        caption="Continue Last Match"
+        onPress={handleContinue}
+        disabled={!lastRoomId}
+        bordered
+        style={{ width: '70%' }}
+      />
     </View>
   );
 }
@@ -81,46 +86,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'space-around',
-  },
-  bgImage: {
-    flex: 1,
-    marginHorizontal: -20,
-  },
-  section: {
-    flex: 1,
-    paddingHorizontal: 20,
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionLarge: {
-    flex: 2,
-    justifyContent: 'space-around',
-  },
-  sectionHeader: {
-    marginBottom: 8,
-  },
-  priceContainer: {
-    alignItems: 'center',
-  },
-  description: {
-    padding: 15,
-    lineHeight: 25,
-  },
-  titleDescription: {
-    color: colors.introText,
-    textAlign: 'center',
-    fontFamily: fonts.primaryRegular,
-    fontSize: 15,
-  },
-  title: {
-    marginTop: 30,
-  },
-  price: {
-    marginBottom: 5,
-  },
-  priceLink: {
-    borderBottomWidth: 1,
-    borderBottomColor: colors.primary,
+    padding: 20,
+    backgroundColor: colors.white,
   },
 });
